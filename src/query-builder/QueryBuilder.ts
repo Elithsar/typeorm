@@ -540,12 +540,17 @@ export abstract class QueryBuilder<Entity> {
      * schema name, otherwise returns escaped table name.
      */
     protected getTableName(tablePath: string): string {
-        return tablePath.split(".")
+        return tablePath.split(/\.(?=([^\[\]]*[\[\]][^\[\]]*[\[\]])*[^\[\]]*$)/)
+            .filter(i => i !== undefined)
             .map(i => {
                 // this condition need because in SQL Server driver when custom database name was specified and schema name was not, we got `dbName..tableName` string, and doesn't need to escape middle empty string
-                if (i === "")
+                if (i === "" || (i.includes("[") && i.includes("]"))) {
                     return i;
-                return this.escape(i);
+                }
+                else{
+                    return this.escape(i);
+                }
+
             }).join(".");
     }
 
